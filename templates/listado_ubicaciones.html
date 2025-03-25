@@ -159,9 +159,9 @@ function marcarComoAtendido(ubicacionId, tipoAtencion) {
         location.reload();
     })
     .catch(error => console.error("Error al marcar como atendido:", error));
-}
+    }
 
-function restaurarUbicacionRevisada(id) {
+    function restaurarUbicacionRevisada(id) {
     fetchAuth(`http://localhost:5000/restaurar_ubicacion/${id}`, { method: "POST" })
         .then(response => response.json())
         .then(result => {
@@ -169,7 +169,7 @@ function restaurarUbicacionRevisada(id) {
             cargarListadoUbicaciones();
         })
         .catch(error => console.error("Error al restaurar la ubicación:", error));
-}
+        }
 
        document.addEventListener("DOMContentLoaded", () => {
         if (!isAdmin()) {
@@ -180,9 +180,29 @@ function restaurarUbicacionRevisada(id) {
             cargarListadoUbicaciones();
         });
 
-    function descargarExcel() {
-    window.location.href = "http://localhost:5000/exportar_ubicaciones";
+        function descargarExcel() {
+    fetchAuth("http://localhost:5000/exportar_ubicaciones")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Error al descargar el archivo");
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "Ubicaciones.xlsx";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        })
+        .catch(error => {
+            alert("Error descargando el Excel");
+            console.error(error);
+        });
     }
+
     </script>
 
 </body>
