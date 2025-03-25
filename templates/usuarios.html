@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios</title>
+    <link rel="stylesheet" href="../static/css/styles.css">
+</head>
+<body>
+    <div class="navbar">
+        <a href="index.html">Cargar Datos</a>
+        <a href="map.html">Ver Mapa</a>
+        <a href="listado_ubicaciones.html">Listado de Ubicaciones</a>
+        <a href="usuarios.html">Gestión de Usuarios</a>
+        <a href="login.html" onclick="logout()" style="float: right;">Cerrar Sesión</a>
+    </div>
+
+    <h1>Gestión de Usuarios</h1>
+
+    <div class="form-container">
+        <h2>Agregar Usuario</h2>
+        <div class="form-group">
+            <input type="text" id="nombre" placeholder="Nombre">
+            <input type="text" id="usuario" placeholder="Usuario">
+        </div>
+        <div class="form-group">
+            <input type="placa" id="placa" placeholder="Placa">
+            <input type="text" id="telefono" placeholder="Teléfono">
+        </div>
+        <div class="form-group">
+            <input type="password" id="contraseña" placeholder="Contraseña">
+            <select id="rol">
+                <option value="1">Administrador</option>
+                <option value="2">Usuario</option>
+            </select>
+        </div>
+        <button onclick="guardarUsuario()">Guardar</button>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Usuario</th>
+                    <th>Placa</th>
+                    <th>Teléfono</th>
+                    <th>Rol</th>
+                    <th>Activo</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tablaUsuarios"></tbody>
+        </table>
+    </div>
+    
+    <script>
+
+    function getCurrentUser() {
+    const user = localStorage.getItem("user");
+    return user ? JSON.parse(user) : null;
+    }
+
+    function isAdmin() {
+    const user = getCurrentUser();
+    return user && user.rol === 1;  // Suponiendo que 1 es admin
+    }
+
+
+
+    function getToken() {
+        return localStorage.getItem("token");
+    }
+
+    // 🔐 Verifica si el usuario está autenticado (por ejemplo al cargar la página)
+    function checkAuth() {
+        const token = getToken();
+        if (!token) {
+            alert("Debes iniciar sesión.");
+            window.location.href = "/login.html";  // Redirige al login
+        }
+    }
+
+    // 🔐 Usar este helper para agregar el Authorization Header
+    function fetchAuth(url, options = {}) {
+        const token = getToken();
+        return fetch(url, {
+            ...options,
+            headers: {
+                ...options.headers,
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+    }
+
+    function cargarUsuarios() {
+    fetchAuth("http://localhost:5000/usuarios_tabla")
+        .then(response => response.json())
+        .then(data => {
+            let usuariosTabla = document.getElementById("tablaUsuarios");
+            usuariosTabla.innerHTML = ""; 
+
+            data.forEach(usuario => {
+                let fila = document.createElement("tr");
+                fila.innerHTML = `
+                    <td>${usuario.nombre}</td>
+                    <td>${usuario.usuario}</td>
+                    <td>${usuario.placa || "No disponible"}</td>  
+                    <td>${usuario.telefono || "No disponible"}</td>  
+                    <td>${usuario.rol}</td>
+                    <td>${usuario.activo}</td>
+                    <td>
+                        <button onclick="editarUsuario(${usuario.id}, '${usuario.nombre}', '${usuario.usuario}', '${usuario.placa || ''}', '${usuario.telefono || ''}', '${usuario.rol}')">Editar</button>
+                        <button onclick="eliminarUsuario(${usuario.id})">Eliminar</button>
+                    </td>
+                `;
+                usuariosTabla.appendChild(fila);
+            });
+        })
+        .catch(error => console.error("Error cargando usuarios:", error));
+    }
+
+    
+function guardarUsuario() {
+    let nombre = document.getElementById("nombre").value.trim();
+    let usuario = document.getElementById("usuario").value.trim();
+    let placa = document.getElementById("placa").value.trim();  // 🛠 Corregido aquí
+    let telefono = document.getElementById("telefono").value.trim();
+    let contraseña = document.getElementById("contraseña").value.trim();
+    let rol_id = document.getElementById("rol").value;
+
+    if (!nombre || !usuario || !placa || !telefono || !contraseña || !rol_id) {
+        alert("Todos los campos son obligatorios.");
+        return;
+    }
+
+    // Validar formato de email
+    let placaRegex = /^[A-Z]{2,3}-\d{2,4}$/;
+    if (!placaRegex.test(placa)) {
+        alert("Por favor, ingresa un correo electrónico válido.");
+        return;
+    }
+
+    fetchAuth("http://localhost:5000/usuarios/agregar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, usuario, placa, telefono, contraseña, rol_id })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.mensaje);
+            cargarUsuarios();
+            setTimeout(() => location.reload(), 500); // Pequeña espera antes de recargar
+        } else {
+            alert(data.mensaje);
+        }
+    })
+    .catch(error => console.error("Error guardando usuario:", error));
+}
+
+function eliminarUsuario(id) {
+    if (!confirm("¿Estás seguro de que deseas eliminar este usuario?")) return;
+
+    fetchAuth(`http://localhost:5000/usuarios/eliminar/${id}`, {
+        method: "DELETE"
+    })
+    .then(response => response.json())
+    .then(result => {
+        alert(result.message);
+        cargarUsuarios(); // 🔹 Recargar la tabla después de eliminar
+    })
+    .catch(error => console.error("Error al eliminar usuario:", error));
+}
+
+function editarUsuario(id, nombre, usuario, placa, telefono, rol) {
+    document.getElementById("nombre").value = nombre || "";
+    document.getElementById("usuario").value = usuario || "";
+    document.getElementById("placa").value = placa || "";
+    document.getElementById("telefono").value = telefono || "";
+    document.getElementById("contraseña").value = "";
+    document.getElementById("rol").value = (rol === "Administrador") ? 1 : 2;
+
+    let botonGuardar = document.querySelector("button[onclick='guardarUsuario()']");
+    botonGuardar.textContent = "Actualizar Usuario";
+    botonGuardar.setAttribute("onclick", `actualizarUsuario(${id})`);
+}
+
+function actualizarUsuario(id) {
+    let nombre = document.getElementById("nombre").value.trim();
+    let usuario = document.getElementById("usuario").value.trim();
+    let placa = document.getElementById("placa").value.trim();
+    let telefono = document.getElementById("telefono").value.trim();
+    let contraseña = document.getElementById("contraseña").value.trim();
+    let rol_id = document.getElementById("rol").value;
+
+    if (!nombre || !usuario || !placa || !telefono || !rol_id) {
+        alert("Todos los campos son obligatorios, excepto la contraseña.");
+        return;
+    }
+
+    // Validar formato de email
+    let placaRegex = /^[A-Z]{2,3}-\d{2,4}$/;
+    if (!placaRegex.test(placa)) {
+        alert("Por favor, ingresa un correo electrónico válido.");
+        return;
+    }
+
+    // Validar teléfono
+    let telefonoRegex = /^[0-9]{7,15}$/;
+    if (!telefonoRegex.test(telefono)) {
+        alert("El número de teléfono debe contener entre 7 y 15 dígitos numéricos.");
+        return;
+    }
+
+    let datos = { nombre, usuario, placa, telefono, rol_id };
+    if (contraseña) {
+        datos.contraseña = contraseña;
+    }
+
+    fetchAuth(`http://localhost:5000/usuarios/editar/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos)
+    })
+    .then(response => response.json())
+    .then(result => {
+        alert(result.message);
+        cargarUsuarios();
+        setTimeout(() => location.reload(), 500);
+    })
+    .catch(error => console.error("Error al editar usuario:", error));
+}
+
+    document.addEventListener("DOMContentLoaded", () => {
+        if (!isAdmin()) {
+            alert("Acceso denegado.");
+            window.location.href = "map.html";  // O la página que quieras redirigir
+        }
+            checkAuth();
+            cargarUsuarios();
+        });
+    </script>
+</body>
+</html>

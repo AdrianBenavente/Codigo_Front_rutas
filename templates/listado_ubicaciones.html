@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Ubicaciones</title>
+    <link rel="stylesheet" href="../static/css/styles.css">
+</head>
+<body>
+    <div class="navbar">
+        <a href="index.html">Cargar Datos</a>
+        <a href="map.html">Ver Mapa</a>
+        <a href="listado_ubicaciones.html">Listado de Ubicaciones</a>
+        <a href="usuarios.html">Gestión de Usuarios</a>
+        <a href="login.html" onclick="logout()" style="float: right;">Cerrar Sesión</a>
+    </div>
+
+    <h1>📌 Listado de Ubicaciones</h1>
+
+    <input type="text" id="buscador" placeholder="🔍 Buscar por CodSolot" onkeyup="buscarUbicacion()">
+
+    <h2>📍 Ubicaciones Activas</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>SOT</th>
+                    <th>Dirección</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tablaActivas"></tbody>
+        </table>
+    </div>
+
+    <h2>✅ Ubicaciones Atendidas</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>SOT</th>
+                    <th>Dirección</th>
+                    <th>Atendido</th>
+                    <th>Fecha y Hora</th>
+                    <th>Tipo de Atención</th>
+                    <th>Comentario</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tablaAtendidas"></tbody>
+        </table>
+    </div>
+    <button onclick="descargarExcel()">📥 Exportar a Excel</button>
+
+    <script>
+
+function getCurrentUser() {
+    const user = localStorage.getItem("user");
+    return user ? JSON.parse(user) : null;
+}
+
+function isAdmin() {
+    const user = getCurrentUser();
+    return user && user.rol === 1;  // Suponiendo que 1 es admin
+}
+
+
+
+function getToken() {
+        return localStorage.getItem("token");
+    }
+
+    // 🔐 Verifica si el usuario está autenticado (por ejemplo al cargar la página)
+    function checkAuth() {
+        const token = getToken();
+        if (!token) {
+            alert("Debes iniciar sesión.");
+            window.location.href = "/login.html";  // Redirige al login
+        }
+    }
+
+    // 🔐 Usar este helper para agregar el Authorization Header
+    function fetchAuth(url, options = {}) {
+        const token = getToken();
+        return fetch(url, {
+            ...options,
+            headers: {
+                ...options.headers,
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+    }
+
+    function cargarListadoUbicaciones() {
+    fetchAuth("http://localhost:5000/ubicaciones_activas")
+        .then(response => response.json())
+        .then(data => {
+            let activas = document.getElementById("tablaActivas");
+            activas.innerHTML = "";
+
+            data.forEach(ubicacion => {
+                let fila = document.createElement("tr");
+                fila.innerHTML = `
+                    <td>${ubicacion.codsolot}</td>
+                    <td>${ubicacion.direccion || "No disponible"}</td>
+                    <td>Asignado</td>
+                    <button onclick="marcarComoAtendido(${ubicacion.id}, 'efectiva')">Atendido Efectivo</button>
+                    <button onclick="marcarComoAtendido(${ubicacion.id}, 'no efectiva')">Atendido No Efectivo</button>
+                `;
+                activas.appendChild(fila);
+            });
+        })
+        .catch(error => console.error("Error cargando ubicaciones activas:", error));
+    
+        fetchAuth("http://localhost:5000/ubicaciones_atendidas")
+        .then(response => response.json())
+        .then(data => {
+            let atendidas = document.getElementById("tablaAtendidas");
+            atendidas.innerHTML = "";
+
+            data.forEach(ubicacion => {
+                let fila = document.createElement("tr");
+                fila.innerHTML = `
+                    <td>${ubicacion.codsolot}</td>
+                    <td>${ubicacion.direccion || "No disponible"}</td>
+                    <td>${ubicacion.atendido_por}</td>
+                    <td>${ubicacion.fecha_hora_atencion}</td>
+                    <td>${ubicacion.tipo_atencion}</td>
+                    <td>${ubicacion.comentario || "Sin comentario"}</td>
+                    <td>
+                        <button onclick="restaurarUbicacionRevisada(${ubicacion.id})">Restaurar</button>
+                    </td>
+                `;
+                atendidas.appendChild(fila);
+            });
+        })
+        .catch(error => console.error("Error cargando ubicaciones atendidas:", error));
+   
+}
+
+function marcarComoAtendido(ubicacionId, tipoAtencion) {
+    let comentario = prompt("Ingrese un comentario sobre la atención:");
+
+    if (!comentario || comentario.trim() === "") {
+        alert("Debe ingresar un comentario para validar la atención.");
+        return;
+    }
+
+    fetchAuth(`http://localhost:5000/ubicaciones/atender/${ubicacionId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tipo_atencion: tipoAtencion, comentario: comentario })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.mensaje);
+        location.reload();
+    })
+    .catch(error => console.error("Error al marcar como atendido:", error));
+}
+
+function restaurarUbicacionRevisada(id) {
+    fetchAuth(`http://localhost:5000/restaurar_ubicacion/${id}`, { method: "POST" })
+        .then(response => response.json())
+        .then(result => {
+            alert(result.mensaje);
+            cargarListadoUbicaciones();
+        })
+        .catch(error => console.error("Error al restaurar la ubicación:", error));
+}
+
+       document.addEventListener("DOMContentLoaded", () => {
+        if (!isAdmin()) {
+            alert("Acceso denegado.");
+            window.location.href = "map.html";  // O la página que quieras redirigir
+        }
+            checkAuth();
+            cargarListadoUbicaciones();
+        });
+
+    function descargarExcel() {
+    window.location.href = "http://localhost:5000/exportar_ubicaciones";
+    }
+    </script>
+
+</body>
+</html>
