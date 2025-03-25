@@ -3,52 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/styles.css">
-    <title>Login</title>
+    <link rel="stylesheet" href="../static/css/styles.css">
+    <title>Cargar Archivo Excel</title>
 </head>
 <body>
-    <div class="login-container">
-        <h1>Iniciar Sesión</h1>
-        <form onsubmit="event.preventDefault(); loginUser();">
-            <label for="username">Usuario:</label>
-            <input type="text" id="username" name="username" required>
-            <br><br>
-            <label for="password">Contraseña:</label>
-            <input type="password" id="password" name="password" required>
-            <br><br>
-            <button type="submit">Ingresar</button>
+    <div class="navbar">
+        <a href="index.html">Cargar Datos</a>
+        <a href="./templates/map.html">Ver Mapa</a>
+        <a href="./templates/listado_ubicaciones.html">Listado de Ubicaciones</a>
+        <a href="./templates/usuarios.html">Gestión de Usuarios</a>
+        <a href="./templates/login.html" onclick="logout()" style="float: right;">Cerrar Sesión</a>
+    </div>
+    <div class="container">
+        <h1>Cargar Archivo Excel</h1>
+        
+        <form id="uploadForm">
+            <input type="file" id="fileInput" name="file" accept=".xlsx, .xls">
+            
+            <!-- 🔹 Select para elegir el usuario -->
+            <label for="usuarioAsignado">Asignar a usuario:</label>
+            <select id="usuarioAsignado" name="usuarioAsignado">
+                <option value="">Selecciona un usuario</option>
+            </select>
+            
+            <button type="button" onclick="uploadFile()">Subir y Procesar</button>
         </form>
     </div>
 
     <script>
-        function loginUser() {
-            var usuario = document.getElementById("username").value;
-            var contraseña = document.getElementById("password").value;
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            if (!isAdmin()) {
+            alert("Acceso denegado.");
+            window.location.href = "map.html";  // O la página que quieras redirigir
+        }
+            fetchAuth("http://localhost:5000/usuarios_tabla")  // 🔹 Endpoint para obtener usuarios
+                .then(response => response.json())
+                .then(data => {
+                    let select = document.getElementById("usuarioAsignado");
+                    data.forEach(usuario => {
+                        let option = document.createElement("option");
+                        option.value = usuario.id;
+                        option.textContent = usuario.nombre;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => console.error("Error al cargar usuarios:", error));
+        });
 
-            fetch("http://localhost:5000/login", {
+    const API_BASE = "http://localhost:5000";
+
+    // 🔐 Función para obtener el token JWT desde localStorage
+    function getToken() {
+        return localStorage.getItem("token");
+    }
+
+    // 🔐 Verifica si el usuario está autenticado (por ejemplo al cargar la página)
+    function checkAuth() {
+        const token = getToken();
+        if (!token) {
+            alert("Debes iniciar sesión.");
+            window.location.href = "/login.html";  // Redirige al login
+        }
+    }
+
+    // 🔐 Usar este helper para agregar el Authorization Header
+    function fetchAuth(url, options = {}) {
+        const token = getToken();
+        const headers = {
+        Authorization: `Bearer ${token}`
+        };
+    // Solo agregar Content-Type si NO estás enviando FormData
+    if (!(options.body instanceof FormData)) {
+        headers["Content-Type"] = "application/json";
+    }
+
+    return fetch(url, {
+        ...options,
+        headers: {
+            ...headers,
+            ...options.headers
+        }
+    });
+    }
+
+    function getCurrentUser() {
+    const user = localStorage.getItem("user");
+    return user ? JSON.parse(user) : null;
+    }
+
+    function isAdmin() {
+    const user = getCurrentUser();
+    return user && user.rol === 1;  // Suponiendo que 1 es admin
+    }
+
+        function uploadFile() {
+            var fileInput = document.getElementById("fileInput").files[0];
+            var usuarioAsignado = document.getElementById("usuarioAsignado").value;
+
+            if (!fileInput) {
+                alert("Selecciona un archivo primero.");
+                return;
+            }
+            if (!usuarioAsignado) {
+                alert("Selecciona un usuario para asignar las ubicaciones.");
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append("file", fileInput);
+            formData.append("usuario_asignado", usuarioAsignado);
+
+            fetchAuth("http://localhost:5000/upload", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username: usuario, password: contraseña })
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
                 alert(data.message);
-                if (data.success) {
-                    // Guardar token en localStorage
-
-                localStorage.setItem("token", data.token);
-                localStorage.setItem("user", JSON.stringify(data.user));
-
-                    // Redirigir a una página protegida (por ejemplo, map.html)
-                    window.location.href = "map.html";
-                }
             })
-            .catch(error => console.error("Error en login:", error));
+            .catch(error => console.error("Error al cargar el archivo:", error));
         }
-
-
-        
-
     </script>
 </body>
 </html>
