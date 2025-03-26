@@ -31,7 +31,7 @@
         const token = getToken();
         if (!token) {
             alert("Debes iniciar sesión.");
-            window.location.href = "/login.html";  // Redirige al login
+            window.location.href = "../index.html";  // Redirige al login
         }
     }
 
@@ -139,11 +139,11 @@ function cargarUbicaciones() {
 
 <body>
     <div class="navbar">
-        <a class="admin-only" href="index.html">Cargar Datos</a>
+        <a class="admin-only" href="login.html">Cargar Datos</a>
         <a href="map.html">Ver Mapa</a>
         <a class="admin-only" href="listado_ubicaciones.html" >Listado de Ubicaciones</a>
         <a class="admin-only" href="usuarios.html">Gestión de Usuarios</a>
-        <a href="login.html" onclick="logout()" style="float: right;">Cerrar Sesión</a>
+        <a href="#" onclick="logout()" style="float: right;">Cerrar Sesión</a>
     </div>
     <div class="container">
         <h1>Mapa de Ubicaciones y Rutas Guardadas</h1>
@@ -825,6 +825,12 @@ function cargarUbicaciones() {
     });
     }
 
+    function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "../index.html";  // o "./index.html" dependiendo tu estructura
+}
+
     
     document.addEventListener("DOMContentLoaded", () => {
         checkAuth();
@@ -833,7 +839,7 @@ function cargarUbicaciones() {
 
         if (!user) {
             alert("No has iniciado sesión.");
-            window.location.href = "login.html";
+            window.location.href = "../index.html";
             return;
         }
 

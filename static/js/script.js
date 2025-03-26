@@ -16,7 +16,7 @@ function checkAuth() {
     const token = getToken();
     if (!token) {
         alert("Debes iniciar sesión.");
-        window.location.href = "/login.html";  // Redirige al login
+        window.location.href = "../index.html";  // Redirige al login
     }
 }
 

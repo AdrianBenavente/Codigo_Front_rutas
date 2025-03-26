@@ -8,11 +8,11 @@
 </head>
 <body>
     <div class="navbar">
-        <a href="index.html">Cargar Datos</a>
+        <a href="login.html">Cargar Datos</a>
         <a href="map.html">Ver Mapa</a>
         <a href="listado_ubicaciones.html">Listado de Ubicaciones</a>
         <a href="usuarios.html">Gestión de Usuarios</a>
-        <a href="login.html" onclick="logout()" style="float: right;">Cerrar Sesión</a>
+        <a href="#" onclick="logout()" style="float: right;">Cerrar Sesión</a>
     </div>
 
     <h1>📌 Listado de Ubicaciones</h1>
@@ -76,7 +76,7 @@ function getToken() {
         const token = getToken();
         if (!token) {
             alert("Debes iniciar sesión.");
-            window.location.href = "/login.html";  // Redirige al login
+            window.location.href = "../index.html";  // Redirige al login
         }
     }
 
@@ -202,6 +202,12 @@ function marcarComoAtendido(ubicacionId, tipoAtencion) {
             console.error(error);
         });
     }
+
+    function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "../index.html";  // o "./index.html" dependiendo tu estructura
+}
 
     </script>
 
