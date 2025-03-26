@@ -21,11 +21,17 @@
     </div>
 
     <script>
+
+
+        //const API_BASE = "http://localhost:5000";
+        
+        const API_BASE = "http://rutaslintek";
+
         function loginUser() {
             var usuario = document.getElementById("username").value;
             var contraseña = document.getElementById("password").value;
 
-            fetch("http://localhost:5000/login", {
+            fetch(`${API_BASE}/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username: usuario, password: contraseña })

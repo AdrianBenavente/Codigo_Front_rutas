@@ -55,6 +55,10 @@
 
     <script>
 
+        const API_BASE = "http://localhost:5000";
+            
+        //const API_BASE = "http://localhost:5000";
+
 function getCurrentUser() {
     const user = localStorage.getItem("user");
     return user ? JSON.parse(user) : null;
@@ -94,7 +98,7 @@ function getToken() {
     }
 
     function cargarListadoUbicaciones() {
-    fetchAuth("http://localhost:5000/ubicaciones_activas")
+    fetchAuth(`${API_BASE}/ubicaciones_activas`)
         .then(response => response.json())
         .then(data => {
             let activas = document.getElementById("tablaActivas");
@@ -114,7 +118,7 @@ function getToken() {
         })
         .catch(error => console.error("Error cargando ubicaciones activas:", error));
     
-        fetchAuth("http://localhost:5000/ubicaciones_atendidas")
+        fetchAuth(`${API_BASE}/ubicaciones_atendidas`)
         .then(response => response.json())
         .then(data => {
             let atendidas = document.getElementById("tablaAtendidas");
@@ -148,7 +152,7 @@ function marcarComoAtendido(ubicacionId, tipoAtencion) {
         return;
     }
 
-    fetchAuth(`http://localhost:5000/ubicaciones/atender/${ubicacionId}`, {
+    fetchAuth(`${API_BASE}/ubicaciones/atender/${ubicacionId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tipo_atencion: tipoAtencion, comentario: comentario })
@@ -162,7 +166,7 @@ function marcarComoAtendido(ubicacionId, tipoAtencion) {
     }
 
     function restaurarUbicacionRevisada(id) {
-    fetchAuth(`http://localhost:5000/restaurar_ubicacion/${id}`, { method: "POST" })
+    fetchAuth(`${API_BASE}/restaurar_ubicacion/${id}`, { method: "POST" })
         .then(response => response.json())
         .then(result => {
             alert(result.mensaje);
@@ -181,7 +185,7 @@ function marcarComoAtendido(ubicacionId, tipoAtencion) {
         });
 
         function descargarExcel() {
-    fetchAuth("http://localhost:5000/exportar_ubicaciones")
+    fetchAuth(`${API_BASE}/exportar_ubicaciones`)
         .then(response => {
             if (!response.ok) {
                 throw new Error("Error al descargar el archivo");

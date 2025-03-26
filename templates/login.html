@@ -31,13 +31,17 @@
     </div>
 
     <script>
+
+    const API_BASE = "http://localhost:5000";
         
+    //const API_BASE = "http://localhost:5000";
+
         document.addEventListener("DOMContentLoaded", function() {
             if (!isAdmin()) {
             alert("Acceso denegado.");
             window.location.href = "map.html";  // O la página que quieras redirigir
         }
-            fetchAuth("http://localhost:5000/usuarios_tabla")  // 🔹 Endpoint para obtener usuarios
+            fetchAuth(`${API_BASE}/usuarios_tabla`)  // 🔹 Endpoint para obtener usuarios
                 .then(response => response.json())
                 .then(data => {
                     let select = document.getElementById("usuarioAsignado");
@@ -50,8 +54,6 @@
                 })
                 .catch(error => console.error("Error al cargar usuarios:", error));
         });
-
-    const API_BASE = "http://localhost:5000";
 
     // 🔐 Función para obtener el token JWT desde localStorage
     function getToken() {
@@ -120,7 +122,7 @@
             formData.append("file", fileInput);
             formData.append("usuario_asignado", usuarioAsignado);
 
-            fetchAuth("http://localhost:5000/upload", {
+            fetchAuth(`${API_BASE}/upload`, {
                 method: "POST",
                 body: formData
             })

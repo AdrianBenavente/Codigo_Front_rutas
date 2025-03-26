@@ -8,6 +8,8 @@
     
     <script>
 
+        
+
         // 🔐 Función para obtener el token JWT desde localStorage
     function getToken() {
         return localStorage.getItem("token");
@@ -58,7 +60,7 @@ let infoWindowActual = null;
     
 
 function cargarUbicaciones() {
-    fetchAuth("http://localhost:5000/ubicaciones")
+    fetchAuth(`${API_BASE}/ubicaciones`)
         .then(response => response.json())
         .then(ubicaciones => {
             let inicioSelect = document.getElementById("inicio");
@@ -207,7 +209,10 @@ function cargarUbicaciones() {
 
     <script>
 
-    const API_BASE = "http://localhost:5000";
+
+        const API_BASE = "http://localhost:5000";
+        
+        //const API_BASE = "http://localhost:5000";
 
     let map;
     let directionsRenderer;
@@ -270,7 +275,7 @@ function cargarUbicaciones() {
         usuario_asignado: usuarioAsignado
     };
 
-    fetchAuth("http://localhost:5000/rutas/agregar", {
+    fetchAuth(`${API_BASE}/rutas/agregar`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(ruta)
@@ -284,7 +289,7 @@ function cargarUbicaciones() {
     }
 
     function mostrarRutasEnMapa() {
-    fetchAuth("http://localhost:5000/rutas")
+    fetchAuth(`${API_BASE}/rutas`)
         .then(response => response.json())
         .then(data => {
             let rutasContainer = document.getElementById("rutasGuardadas");
@@ -334,7 +339,7 @@ function cargarUbicaciones() {
         return;
     }
 
-    fetchAuth(`http://localhost:5000/rutas/editar_asignado/${rutaId}`, {
+    fetchAuth(`${API_BASE}/rutas/editar_asignado/${rutaId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nuevo_usuario_id: nuevoUsuarioId })
@@ -408,7 +413,7 @@ function cargarUbicaciones() {
     detallesContainer.appendChild(selectUsuario);
 
     // **🔹 Llenar el select con los usuarios disponibles**
-    fetchAuth("http://localhost:5000/usuarios")
+    fetchAuth(`${API_BASE}/usuarios`)
         .then(response => response.json())
         .then(usuarios => {
             usuarios.forEach(usuario => {
@@ -486,7 +491,7 @@ function cargarUbicaciones() {
     function eliminarRuta(rutaId) {
     if (!confirm("¿Seguro que deseas eliminar esta ruta? Todas sus ubicaciones serán marcadas como revisadas.")) return;
 
-    fetchAuth(`http://localhost:5000/rutas/eliminar/${rutaId}`, { method: "DELETE" })
+    fetchAuth(`${API_BASE}/rutas/eliminar/${rutaId}`, { method: "DELETE" })
         .then(response => response.json())
         .then(data => {
             alert(data.mensaje);
@@ -500,7 +505,7 @@ function cargarUbicaciones() {
     function cancelarRuta(rutaId) {
     if (!confirm("¿Seguro que deseas cancelar esta ruta? Esta acción eliminará la ruta pero no afectará las ubicaciones.")) return;
 
-    fetchAuth(`http://localhost:5000/rutas/cancelar/${rutaId}`, { method: "DELETE" })
+    fetchAuth(`${API_BASE}/rutas/cancelar/${rutaId}`, { method: "DELETE" })
         .then(response => response.json())
         .then(result => {
             alert(result.mensaje);
@@ -512,7 +517,7 @@ function cargarUbicaciones() {
     }
 
     function cargarUsuarios() {
-    fetchAuth("http://localhost:5000/usuarios_tabla")  // 🔹 Endpoint para obtener usuarios
+    fetchAuth(`${API_BASE}/usuarios_tabla`)  // 🔹 Endpoint para obtener usuarios
                 .then(response => response.json())
                 .then(data => {
                     let select = document.getElementById("usuarioAsignado");
@@ -528,7 +533,7 @@ function cargarUbicaciones() {
 
     // 🔹 Cargar Ubicaciones en la Tabla (activas y revisadas)
     function cargarListadoUbicaciones() {
-    fetchAuth("http://localhost:5000/todas_ubicaciones")
+    fetchAuth(`${API_BASE}/todas_ubicaciones`)
     .then(response => response.json())
         .then(data => {
             console.log("Ubicaciones recibidas:", data);  // 🔹 Verificar si llegan datos
@@ -583,7 +588,7 @@ function cargarUbicaciones() {
         return;
     }
 
-    fetchAuth(`http://localhost:5000/ubicaciones/revisar/${ubicacionId}`, {
+    fetchAuth(`${API_BASE}/ubicaciones/revisar/${ubicacionId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ comentario: comentario })
@@ -598,7 +603,7 @@ function cargarUbicaciones() {
     }
 
     function restaurarUbicacionRevisada(id) {
-    fetchAuth(`http://localhost:5000/restaurar_ubicacion/${id}`, { method: "POST" })
+    fetchAuth(`${API_BASE}/restaurar_ubicacion/${id}`, { method: "POST" })
         .then(response => response.json())
         .then(result => {
             alert(result.mensaje);
@@ -610,7 +615,7 @@ function cargarUbicaciones() {
     function eliminarUbicacionDefinitiva(id) {
     if (!confirm("¿Seguro que deseas eliminar esta ubicación?")) return;
 
-    fetchAuth(`http://localhost:5000/eliminar_ubicacion/${id}`, { method: "DELETE" })
+    fetchAuth(`${API_BASE}/eliminar_ubicacion/${id}`, { method: "DELETE" })
         .then(response => response.json())
         .then(result => {
             alert(result.mensaje);
@@ -639,7 +644,7 @@ function cargarUbicaciones() {
         return;
     }
 
-    fetchAuth(`http://localhost:5000/ubicaciones/revisar/${id}`, {
+    fetchAuth(`${API_BASE}/ubicaciones/revisar/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ comentario })
@@ -661,7 +666,7 @@ function cargarUbicaciones() {
         return;
     }
 
-    fetchAuth(`http://localhost:5000/ubicaciones/atender/${ubicacionId}`, {
+    fetchAuth(`${API_BASE}/ubicaciones/atender/${ubicacionId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tipo_atencion: tipoAtencion, comentario: comentario })
@@ -682,7 +687,7 @@ function cargarUbicaciones() {
     }
 
     function actualizarEstadoEliminarRuta(rutaId) {
-    fetchAuth("http://localhost:5000/rutas")
+    fetchAuth(`${API_BASE}/rutas`)
         .then(response => response.json())
         .then(rutas => {
             let ruta = rutas.find(r => r.id === rutaId);
@@ -697,7 +702,7 @@ function cargarUbicaciones() {
     }
 
     function cargarUbicacionesAtendidas() {
-    fetchAuth("http://localhost:5000/ubicaciones_atendidas")
+    fetchAuth(`${API_BASE}/ubicaciones_atendidas`)
         .then(response => response.json())
         .then(data => {
             let atendidas = document.getElementById("tablaAtendidas");
@@ -723,7 +728,7 @@ function cargarUbicaciones() {
     }
 
     function cargarUsuariosFiltro() {
-    fetchAuth("http://localhost:5000/usuarios")
+    fetchAuth(`${API_BASE}/usuarios`)
         .then(response => response.json())
         .then(usuarios => {
             const filtroSelect = document.getElementById("usuarioFiltro");
@@ -751,7 +756,7 @@ function cargarUbicaciones() {
     // 🔹 Eliminar todos los marcadores actuales antes de filtrar
     desactivarFiltro();
 
-    fetchAuth(`http://localhost:5000/ubicaciones_filtradas?usuario_id=${userId}`)
+    fetchAuth(`${API_BASE}/ubicaciones_filtradas?usuario_id=${userId}`)
         .then(response => response.json())
         .then(data => {
             actualizarMapa(data);
