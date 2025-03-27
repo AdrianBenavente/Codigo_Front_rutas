@@ -185,8 +185,18 @@ function marcarComoAtendido(ubicacionId, tipoAtencion) {
             cargarListadoUbicaciones();
         });
 
+    function buscarUbicacion() {
+        let filtro = document.getElementById("buscador").value.toLowerCase();
+        let filas = document.querySelectorAll("tbody tr");
+
+        filas.forEach(fila => {
+            let codsolot = fila.cells[0].textContent.toLowerCase();
+            fila.style.display = codsolot.includes(filtro) ? "" : "none";
+        });
+    }
+
         function descargarExcel() {
-    fetchAuth(`${API_BASE}/exportar_ubicaciones`)
+        fetchAuth(`${API_BASE}/exportar_ubicaciones`)
         .then(response => {
             if (!response.ok) {
                 throw new Error("Error al descargar el archivo");
