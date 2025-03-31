@@ -241,11 +241,15 @@ function cargarUbicaciones() {
                 map.setCenter(userLatLng);
 
                 // Agrega un marcador en la ubicación actual del usuario
-                new google.maps.Marker({
-                    position: userLatLng,
+                new google.maps.Circle({
+                    strokeColor: "#0000FF",       // Color del borde
+                    strokeOpacity: 0.8,           // Opacidad del borde
+                    strokeWeight: 2,              // Grosor del borde
+                    fillColor: "#0000FF",         // Color de relleno
+                    fillOpacity: 0.35,            // Opacidad del relleno
                     map: map,
-                    title: "Mi ubicación actual",
-                    icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                    center: userLatLng,
+                    radius: 100                  // Radio en metros (ajústalo según tus necesidades)
                 });
             },
             function(error) {
