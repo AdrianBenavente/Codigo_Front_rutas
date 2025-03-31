@@ -125,7 +125,7 @@ function getToken() {
             let atendidas = document.getElementById("tablaAtendidas");
             atendidas.innerHTML = "";
 
-            data.forEach(ubicacion => {
+            data.reverse().forEach(ubicacion => {
                 let fila = document.createElement("tr");
                 fila.innerHTML = `
                     <td>${ubicacion.codsolot}</td>

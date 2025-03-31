@@ -220,13 +220,41 @@ function cargarUbicaciones() {
 
     function initMap() {
         map = new google.maps.Map(document.getElementById("map"), {
-    center: { lat: -12.0464, lng: -77.0428 },
-    zoom: 12
-    });
+            center: { lat: -12.0464, lng: -77.0428 },
+            zoom: 12
+        });
 
     directionsService = new google.maps.DirectionsService();
     directionsRenderer = new google.maps.DirectionsRenderer({ suppressMarkers: false });
     directionsRenderer.setMap(map);
+
+    // Obtener la ubicación actual del usuario y marcarla en el mapa
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const userLatLng = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+
+                // Centra el mapa en la ubicación del usuario
+                map.setCenter(userLatLng);
+
+                // Agrega un marcador en la ubicación actual del usuario
+                new google.maps.Marker({
+                    position: userLatLng,
+                    map: map,
+                    title: "Mi ubicación actual",
+                    icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                });
+            },
+            function(error) {
+                console.error("Error obteniendo la ubicación:", error);
+            }
+        );
+    } else {
+        console.error("La geolocalización no está soportada en este navegador.");
+    }
 
     cargarUbicaciones();
     cargarUsuariosFiltro();
