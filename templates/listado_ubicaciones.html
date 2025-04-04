@@ -34,6 +34,10 @@
         </table>
     </div>
 
+    <h1>📌 Listado de Personal</h1>
+
+    <input type="text" id="buscador2" placeholder="🔍 Buscar por Personal" onkeyup="buscarPersonal()">
+
     <h2>✅ Ubicaciones Atendidas</h2>
     <div class="table-container">
         <table>
@@ -145,7 +149,7 @@ function getToken() {
    
 }
 
-function marcarComoAtendido(ubicacionId, tipoAtencion) {
+    function marcarComoAtendido(ubicacionId, tipoAtencion) {
     let comentario = prompt("Ingrese un comentario sobre la atención:");
 
     if (!comentario || comentario.trim() === "") {
@@ -192,6 +196,16 @@ function marcarComoAtendido(ubicacionId, tipoAtencion) {
         filas.forEach(fila => {
             let codsolot = fila.cells[0].textContent.toLowerCase();
             fila.style.display = codsolot.includes(filtro) ? "" : "none";
+        });
+    }
+
+    function buscarPersonal() {
+        let filtro = document.getElementById("buscador2").value.toLowerCase();
+        let filas = document.querySelectorAll("tbody tr");
+
+        filas.forEach(fila => {
+            let atendido_por = fila.cells[0].textContent.toLowerCase();
+            fila.style.display = atendido_por.includes(filtro) ? "" : "none";
         });
     }
 
