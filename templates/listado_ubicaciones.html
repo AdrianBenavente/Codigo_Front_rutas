@@ -204,7 +204,7 @@ function getToken() {
         let filas = document.querySelectorAll("tbody tr");
 
         filas.forEach(fila => {
-            let atendido_por = fila.cells[0].textContent.toLowerCase();
+            let atendido_por = fila.cells[2].textContent.toLowerCase();
             fila.style.display = atendido_por.includes(filtro) ? "" : "none";
         });
     }
